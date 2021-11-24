@@ -2,7 +2,7 @@
 
 Summary   | Current Release
 ----------|-----------------------
-Version   | 1.0.1
+Version   | 1.0.2
 Date      | November 23, 2021
 Platforms | macOS, Linux (Ubuntu+), Windows
 Author    | Abe Pralle
