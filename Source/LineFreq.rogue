@@ -1,0 +1,80 @@
+#================================================================================
+# LineFreq.rogue
+# November 23, 2021
+#================================================================================
+
+$requireRogue "1.10"
+
+uses Utility/CommandLineParser
+
+try
+  LineFreq( System.command_line_arguments )
+catch (error:Error)
+  Console.error.println error
+  System.exit 1
+endTry
+
+class LineFreq
+  METHODS
+    method init( args:String[] )
+      local command = parse_args( args )
+
+      if (command//options//help or command//args.count == 0)
+        print_usage
+        System.exit 0
+      endIf
+
+      forEach (arg in command//args)
+        process( arg )
+      endForEach
+
+    method process( filepath:String )
+      local line_counts = StringTable<<Int32>>()
+      forEach (line in LineReader(File(filepath)))
+        line = line.trimmed.replacing('\t',' ')
+        local entry = line_counts.find( line )
+        if (entry) ++entry.value
+        else       line_counts[ line ] = 1
+      endForEach
+
+      if (line_counts.is_empty)
+        println "$: empty file" (filepath)
+        return
+      endIf
+
+      line_counts.sort( (a,b) => (a.value < b.value or (a.value == b.value and a.key < b.key)) )
+
+      local sum  = 0
+      local high = line_counts.first
+      local low  = high
+      forEach (count in line_counts)
+        sum += count
+        high .= or_larger( count )
+        low  .= or_smaller( count )
+      endForEach
+
+      local digits = high.digit_count
+      local avg = sum / Real64(line_counts.count)
+
+      forEach (entry in line_counts.entries)
+        println( "$  $"(entry.value.right_justified(digits), entry.key) )
+      endForEach
+      println "Low:  " + low
+      println "High: " + high
+      println "Avg:  " + avg.format(".2")
+
+    method parse_args( args:String[] )->Value
+      local command = CommandLineParser().
+      [
+        option( "--help",     &aliases=["-h","-?"] )
+      ].parse( args )
+      return command
+
+    method print_usage
+      println @|USAGE
+               |  linefreq [OPTIONS] filenames
+               |
+               |OPTIONS
+               |  --help, -h, -?
+               |    Show this help text.
+endClass

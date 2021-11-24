@@ -1,0 +1,9 @@
+.rogo
+/Build
+.*.swo
+.*.swp
+*.o
+.DS_Store
+*~
+Local.settings
+BuildLocal.rogue
